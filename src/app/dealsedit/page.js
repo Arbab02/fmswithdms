@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-function DealForm() {
+function FormComponentContent() {
   const [formData, setFormData] = useState({
     name: '',
     industry: '',
@@ -24,7 +24,6 @@ function DealForm() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const searchParams = useSearchParams();
   const editId = searchParams?.get('editId');
   const router = useRouter();
@@ -62,7 +61,6 @@ function DealForm() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     try {
       const res = await fetch(editId ? `/api/deals/${editId}` : '/api/deals', {
         method: editId ? 'PUT' : 'POST',
@@ -70,14 +68,12 @@ function DealForm() {
         body: JSON.stringify(formData),
       });
       if (res.ok) {
-        router.push('/deals');
+        router.push('/deals'); // Redirect to the list page after saving
       } else {
         console.error('Failed to save deal:', res.statusText);
       }
     } catch (error) {
       console.error('Error saving deal:', error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -86,7 +82,7 @@ function DealForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 pl-20 pr-4 w-[100%] bg-white p-6 shadow-md rounded">
+    <form onSubmit={handleSubmit} className="space-y-6 pl-20 pr-4 w-[100%] pt-20 bg-white shadow-md rounded">
       {/* Name */}
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -99,7 +95,7 @@ function DealForm() {
           value={formData.name || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Enter Name"
+          placeholder="Enter deal name"
           required
         />
       </div>
@@ -116,7 +112,7 @@ function DealForm() {
           value={formData.industry || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Enter Industry"
+          placeholder="Enter industry"
           required
         />
       </div>
@@ -133,7 +129,7 @@ function DealForm() {
           value={formData.businessType || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Enter Business Type"
+          placeholder="Enter business type"
           required
         />
       </div>
@@ -150,7 +146,7 @@ function DealForm() {
           value={formData.amount || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Enter Amount"
+          placeholder="Enter deal amount"
           required
         />
       </div>
@@ -167,7 +163,7 @@ function DealForm() {
           value={formData.title || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Enter Title"
+          placeholder="Enter deal title"
           required
         />
       </div>
@@ -177,13 +173,14 @@ function DealForm() {
         <label htmlFor="description" className="block text-sm font-medium text-gray-700">
           Description
         </label>
-        <textarea
+        <input
+          type="text"
           id="description"
           name="description"
           value={formData.description || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Enter Description"
+          placeholder="Enter deal description"
         />
       </div>
 
@@ -199,7 +196,7 @@ function DealForm() {
           value={formData.website || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Enter Website"
+          placeholder="Enter website"
         />
       </div>
 
@@ -215,7 +212,7 @@ function DealForm() {
           value={formData.email || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Enter Email"
+          placeholder="Enter email"
           required
         />
       </div>
@@ -232,7 +229,7 @@ function DealForm() {
           value={formData.phone || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Enter Phone"
+          placeholder="Enter phone number"
           required
         />
       </div>
@@ -249,24 +246,7 @@ function DealForm() {
           value={formData.address || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
-          placeholder="Enter Address"
-        />
-      </div>
-
-      {/* Business */}
-      <div>
-        <label htmlFor="business" className="block text-sm font-medium text-gray-700">
-          Business
-        </label>
-        <input
-          type="text"
-          id="business"
-          name="business"
-          value={formData.business || ''}
-          onChange={handleChange}
-          className="border p-2 rounded w-full"
-          placeholder="Enter Business"
-          required
+          placeholder="Enter address"
         />
       </div>
 
@@ -330,6 +310,7 @@ function DealForm() {
           value={formData.month || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
+          placeholder="Enter month"
         />
       </div>
 
@@ -345,29 +326,27 @@ function DealForm() {
           value={formData.year || ''}
           onChange={handleChange}
           className="border p-2 rounded w-full"
+          placeholder="Enter year"
         />
       </div>
 
-      <div className="mt-4">
+      <div className="flex justify-end">
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-blue-500 text-white p-2 rounded"
+          className="bg-blue-500 text-white p-2 rounded mt-4"
         >
-          {isSubmitting ? 'Saving...' : 'Submit'}
+          {editId ? 'Update Deal' : 'Create Deal'}
         </button>
       </div>
     </form>
   );
 }
-function FormComponent() {
+
+export default function FormComponent() {
   return (
-    <main className="bg-gray-100 pl-20 pr-4 w-[100%] absolute pt-20">
-      <h1 className="text-2xl font-bold text-indigo-600 mb-6">Add or Edit Metric</h1>
-      <Suspense fallback={<p>Loading form...</p>}>
-        <FormComponentContent />
-      </Suspense>
-    </main>
+    
+    <Suspense fallback={<p>Loading...</p>}>
+      <FormComponentContent />
+    </Suspense>
   );
 }
-export default DealForm;
