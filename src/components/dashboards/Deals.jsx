@@ -1,12 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
-import { FaSearch } from 'react-icons/fa';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+import { FaChartPie, FaChartBar } from 'react-icons/fa';
 
-export default function ListComponent() {
+export default function DashboardComponent() {
   const currentYear = new Date().getFullYear().toString();
-
   const [deals, setDeals] = useState([]);
   const [filteredDeals, setFilteredDeals] = useState([]);
   const [searchMonth, setSearchMonth] = useState('');
@@ -15,7 +26,7 @@ export default function ListComponent() {
 
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
   const fetchDeals = async () => {
@@ -41,126 +52,141 @@ export default function ListComponent() {
 
   useEffect(() => {
     let filtered = deals;
+
     if (searchMonth) {
-      filtered = filtered.filter((deal) => deal.month?.toLowerCase() === searchMonth.toLowerCase());
+      filtered = filtered.filter(
+        (deal) => deal.month?.toLowerCase() === searchMonth.toLowerCase()
+      );
     }
     if (searchYear) {
       filtered = filtered.filter((deal) => deal.year?.toString() === searchYear);
     }
+
     setFilteredDeals(filtered);
   }, [searchMonth, searchYear, deals]);
 
-  // Calculate totals for the charts
-  const chartData = () => {
-    const industryTotals = {};
-    const companyNames = [];
+  // Calculate total deal amount by month
+  const monthlyDealData = filteredDeals.reduce((acc, deal) => {
+    const month = deal.month || 'Unknown';
+    const existing = acc.find((item) => item.name === month);
+    if (existing) {
+      existing.amount += deal.amount || 0; // Use deal amount for comparison
+    } else {
+      acc.push({ name: month, amount: deal.amount || 0 });
+    }
+    return acc;
+  }, []);
 
-    filteredDeals.forEach((deal) => {
-      if (!industryTotals[deal.industry]) {
-        industryTotals[deal.industry] = 0;
-      }
-      industryTotals[deal.industry] += deal.amount;
-      if (!companyNames.includes(deal.name)) companyNames.push(deal.name);
-    });
+  // Calculate total deal amount by industry
+  const industryData = filteredDeals.reduce((acc, deal) => {
+    const industry = deal.industry || 'Other';
+    const existing = acc.find((item) => item.name === industry);
+    if (existing) {
+      existing.amount += deal.amount || 0;
+    } else {
+      acc.push({ name: industry, amount: deal.amount || 0 });
+    }
+    return acc;
+  }, []);
 
-    // Bar chart data
-    const barData = Object.keys(industryTotals).map((industry) => ({
-      name: industry,
-      amount: industryTotals[industry],
-    }));
-
-    // Pie chart data
-    const pieData = companyNames.map((name) => ({
-      name,
-      value: filteredDeals
-        .filter((deal) => deal.name === name)
-        .reduce((acc, deal) => acc + deal.amount, 0),
-    }));
-
-    return { barData, pieData };
-  };
-
-  const { barData, pieData } = chartData();
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6384'];
 
   return (
-    <main className="bg-gray-200 pt-12 px-4 sm:px-8 md:px-16 lg:px-20">
-      <h1 className="text-4xl font-bold text-center mb-6 text-gray-800">Your Deals</h1>
-      
-      {/* Search Section */}
-      <div className="sticky top-0 z-10 bg-gray-200 py-4  mb-8">
-        <div className="flex justify-between items-center">
-          <div className="w-full max-w-xs mx-auto space-y-4">
-            {/* Month Filter */}
-            <div className="flex items-center space-x-2">
-              <FaSearch className="text-lg text-gray-600" />
-              <select
-                id="searchMonth"
-                value={searchMonth}
-                onChange={(e) => setSearchMonth(e.target.value)}
-                className="border rounded-2xl p-2 w-full text-gray-600 focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">All Months</option>
-                {months.map((month, index) => (
-                  <option key={index} value={month}>{month}</option>
-                ))}
-              </select>
-            </div>
+    <main className="pl-20 pr-4 py-16 w-[100%] bg-gray-200 min-h-screen">
+      <h1 className="text-3xl font-bold text-center text-indigo-600 mb-8">
+        <FaChartPie className="inline-block mr-2" />
+        Business Deals Dashboard
+      </h1>
 
-            {/* Year Filter */}
-            <div className="flex items-center space-x-2">
-              <FaSearch className="text-lg text-gray-600" />
-              <input
-                id="searchYear"
-                type="number"
-                value={searchYear}
-                onChange={(e) => setSearchYear(e.target.value)}
-                placeholder="Enter Year"
-                className="border rounded-2xl p-2 w-full text-gray-600 focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+      {/* Filters */}
+      <div className=" p-6 sticky top-0 z-10 bg-gray-200 shadow-md rounded mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="searchMonth"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Filter by Month
+            </label>
+            <select
+              id="searchMonth"
+              value={searchMonth}
+              onChange={(e) => setSearchMonth(e.target.value)}
+              className="border rounded-2xl p-2 w-full"
+            >
+              <option value="">All Months</option>
+              {months.map((month, index) => (
+                <option key={index} value={month}>
+                  {month}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="searchYear"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Filter by Year
+            </label>
+            <input
+              id="searchYear"
+              type="number"
+              value={searchYear}
+              onChange={(e) => setSearchYear(e.target.value)}
+              placeholder="Enter Year"
+              className="border rounded-2xl p-2 w-full"
+            />
           </div>
         </div>
       </div>
 
-      {/* Deals Content */}
       {loading ? (
-        <p className="text-center text-gray-600">Loading deals...</p>
-      ) : filteredDeals.length === 0 ? (
-        <p className="text-center text-gray-600">No deals available.</p>
+        <p className="text-center text-gray-600">Loading data...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-          {/* Bar Chart */}
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Industry Comparison</h2>
-            <BarChart width={500} height={300} data={barData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="amount" fill="#4F46E5" />
-            </BarChart>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Pie Chart */}
+          <div className="bg-white py-6 px-16 shadow-md  rounded">
+            <h2 className="text-lg font-semibold text-center mb-4">
+              Total Deal Amount by Industry
+            </h2>
+            <ResponsiveContainer width="100%" height={400}>
+              <PieChart>
+                <Pie
+                  data={industryData}
+                  dataKey="amount"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={150}
+                  fill="#8884d8"
+                  label
+                >
+                  {industryData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
 
-          {/* Pie Chart */}
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Company Breakdown</h2>
-            <PieChart width={400} height={400}>
-              <Pie
-                data={pieData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={150}
-                fill="#4F46E5"
-                label
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={`#${Math.floor(Math.random() * 16777215).toString(16)}`} />
-                ))}
-              </Pie>
-            </PieChart>
+          {/* Bar Chart */}
+          <div className="bg-white py-6 px-16 shadow-md rounded">
+            <h2 className="text-lg font-semibold text-center mb-4">
+              Total Deal Amount by Month
+            </h2>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={monthlyDealData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="amount" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       )}
