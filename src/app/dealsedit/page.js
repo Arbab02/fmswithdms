@@ -360,7 +360,7 @@ function DealForm() {
     </form>
   );
 }
-export default function FormComponent() {
+function FormComponent() {
   return (
     <main className="bg-gray-100 pl-20 pr-4 w-[100%] absolute pt-20">
       <h1 className="text-2xl font-bold text-indigo-600 mb-6">Add or Edit Metric</h1>
