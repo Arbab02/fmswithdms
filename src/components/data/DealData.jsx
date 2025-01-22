@@ -117,10 +117,10 @@ export default function ListComponent() {
                 <p><strong>Amount:</strong> ${deal.amount}</p>
                 <p><strong>Title:</strong> {deal.title}</p>
                 <p><strong>Description:</strong> {deal.description || 'N/A'}</p>
-                <p><strong>Email:</strong> {deal.email}</p>
                 <p><strong>Phone:</strong> {deal.phone}</p>
-                <p><strong>Website:</strong> {deal.website || 'N/A'}</p>
+                <p><strong>Email:</strong> {deal.email}</p>
                 <p><strong>Business:</strong> {deal.business}</p>
+                <p><strong>Website:</strong> {deal.website || 'N/A'}</p>
                 <p><strong>Status:</strong> {deal.status}</p>
                 <p><strong>Start Date:</strong> {deal.startDate ? new Date(deal.startDate).toLocaleDateString() : 'N/A'}</p>
                 <p><strong>End Date:</strong> {deal.endDate ? new Date(deal.endDate).toLocaleDateString() : 'N/A'}</p>
